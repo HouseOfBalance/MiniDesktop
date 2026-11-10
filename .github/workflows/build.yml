@@ -12,8 +12,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Unzip Project
-        run: unzip -q MiniPcDesktop.zip
+      - name: Unzip and Fix Import
+        run: |
+          unzip -q MiniPcDesktop.zip
+          sed -i '/^package /a import androidx.compose.ui.input.pointer.isSecondaryPressed' MiniPcDesktop/app/src/main/java/com/minipc/desktop/ui/common/Common.kt
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -35,4 +37,3 @@ jobs:
         with:
           name: MiniPC-Debug-APK
           path: MiniPcDesktop/app/build/outputs/apk/debug/*.apk
-          
