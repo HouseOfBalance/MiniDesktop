@@ -14,8 +14,9 @@ jobs:
 
       - name: Unzip and Fix Import
         run: |
-          unzip -q MiniPcDesktop.zip
-          sed -i '/^package /a import androidx.compose.ui.input.pointer.isSecondaryPressed' MiniPcDesktop/app/src/main/java/com/minipc/desktop/ui/common/Common.kt
+          unzip -o -q MiniPcDesktop.zip
+          COMMON_FILE=$(find . -name "Common.kt" | head -n 1)
+          grep -q "import androidx.compose.ui.input.pointer.isSecondaryPressed" "$COMMON_FILE" || sed -i '/^package /a import androidx.compose.ui.input.pointer.isSecondaryPressed' "$COMMON_FILE"
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -29,11 +30,13 @@ jobs:
           gradle-version: '8.7'
 
       - name: Build Debug APK
-        working-directory: ./MiniPcDesktop
-        run: gradle assembleDebug --stacktrace
+        run: |
+          PROJECT_DIR=$(dirname $(find . -name "settings.gradle.kts" | head -n 1))
+          cd "$PROJECT_DIR"
+          gradle assembleDebug --stacktrace
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: MiniPC-Debug-APK
-          path: MiniPcDesktop/app/build/outputs/apk/debug/*.apk
+          path: "**/app/build/outputs/apk/debug/*.apk"
