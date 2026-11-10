@@ -14,9 +14,15 @@ jobs:
 
       - name: Unzip and Fix Import
         run: |
-          unzip -o -q MiniPcDesktop.zip
+          for z in *.zip; do
+            if [ -f "$z" ]; then
+              unzip -o -q "$z"
+            fi
+          done
           COMMON_FILE=$(find . -name "Common.kt" | head -n 1)
-          grep -q "import androidx.compose.ui.input.pointer.isSecondaryPressed" "$COMMON_FILE" || sed -i '/^package /a import androidx.compose.ui.input.pointer.isSecondaryPressed' "$COMMON_FILE"
+          if [ -n "$COMMON_FILE" ]; then
+            grep -q "import androidx.compose.ui.input.pointer.isSecondaryPressed" "$COMMON_FILE" || sed -i '/^package /a import androidx.compose.ui.input.pointer.isSecondaryPressed' "$COMMON_FILE"
+          fi
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -31,7 +37,8 @@ jobs:
 
       - name: Build Debug APK
         run: |
-          PROJECT_DIR=$(dirname $(find . -name "settings.gradle.kts" | head -n 1))
+          SETTINGS_FILE=$(find . -name "settings.gradle.kts" | head -n 1)
+          PROJECT_DIR=$(dirname "$SETTINGS_FILE")
           cd "$PROJECT_DIR"
           gradle assembleDebug --stacktrace
 
@@ -40,3 +47,4 @@ jobs:
         with:
           name: MiniPC-Debug-APK
           path: "**/app/build/outputs/apk/debug/*.apk"
+          
