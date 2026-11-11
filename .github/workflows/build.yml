@@ -19,9 +19,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Tìm thư mục project (nơi có settings.gradle.kts)
+      - name: Giải nén và tìm thư mục project (nơi có settings.gradle.kts)
         id: proj
         run: |
+          LATEST_ZIP=$(ls -t *.zip 2>/dev/null | head -1)
+          if [ -n "$LATEST_ZIP" ]; then
+            echo "Đang giải nén: $LATEST_ZIP"
+            unzip -o -q "$LATEST_ZIP"
+          fi
           f=$(find . -name settings.gradle.kts -not -path './.git/*' | head -1)
           if [ -z "$f" ]; then
             echo "::error::Không thấy settings.gradle.kts trong repo. Cấu trúc hiện tại:"
@@ -37,7 +42,6 @@ jobs:
           distribution: temurin
           java-version: 17
 
-      # Dự án chưa có gradlew nên dùng Gradle 8.7 do action cài sẵn (có cache)
       - name: Cài Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
@@ -70,4 +74,3 @@ jobs:
           name: build-reports
           path: ${{ steps.proj.outputs.dir }}/app/build/reports/**
           if-no-files-found: ignore
-          
